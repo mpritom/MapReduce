@@ -24,7 +24,3 @@ with open('ratings_new.dat', 'w') as out:
                 row[1] = str(movieMap.get(row[1]))
                 out.write("::".join(row)+'\n')
                 
-#keys = ['a', 'b', 'c']
-#values = [1, 2, 3]
-#dictionary = dict(zip(keys, values))
-#print(dictionary['b'])
