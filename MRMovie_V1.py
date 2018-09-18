@@ -31,8 +31,19 @@ class MRMovie(MRJob)
     def reducer_compute_similarities(self, _, values):
         #something
     
-    
-    def mapper_get_names(self, key, values):
+    def mapper_get_names(self, _, line):
+        if len(self.options.moviename) == 0:
+            raise Exception('Must specify atleast one search item.')
+        mid, uid, name, rating = '0', '0', '0', '0'
+        line= unicode(line, errors='ignore')
+        splits = line.strip().split('::')
+        if len(splits) == 4:
+            uid,mid,rating = splits[0],splits[1],splits[2]
+        else:
+            mid,name = splits[0],splits[1]
+        yield mid, (uid, name, rating)
+            
+    def reducer_get_names(self, key, values):
         last_name=None
         for value in values:
             list_values= list(value)
