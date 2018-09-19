@@ -56,8 +56,10 @@ class MRMovie(MRJob):
 
 
 	def reducer_create_pairs(self, _, values):
-        for value in sorted(values):
-            print value
+		new_list=[]
+        	for value in values:
+			new_list.append(value)
+			
 
 	#def reducer_compute_similarities(self, _, values):
 		### SOMETHING
