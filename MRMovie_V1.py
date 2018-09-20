@@ -51,14 +51,55 @@ class MRMovie(MRJob):
 			else:
 				yield uid, (uid, last_name,rating)
 
-	
-
-
 
 	def reducer_create_pairs(self, _, values):
-		new_list=[]
+		movie_list=[]
+		rating_list=[]
+		global_uid=None
+		creating_pairs=[]
         	for value in values:
-			new_list.append(value)
+			list_values = list(value)
+			uid, mname, rating = list_values[0], list_values[1], list_values[2]
+			if global_uid == None:
+				global_uid = uid
+			if global_uid == uid:
+				movie_list.append(mname)
+				rating_list.append(rating)
+			else:
+				movie_pairings = pairs(movie_list)
+				rating_pairings = pairs(rating_list)
+				movie_list.clear
+				rating_list.clear
+				
+				global_uid=uid
+				if len(movie_list) == 0:
+					movie_list.append(mname)
+				if len(rating_list) == 0:
+					rating_list.append(rating)
+				
+				i=0
+				while i < len(movie_pairings):
+					#creating_pairs.append(movie_pairings[i], rating_pairings[i])
+					yield movie_pairings[i], (movie_pairings[i], rating_pairings[i])
+					i += 1
+				break
+				#print len(creating_pairs)+"\n"
+		#for pair_element in creating_pairs:
+			#pair_list = list(pair_element)
+			#m1,m2 = pair_list[0][0], pair_list[0][1]
+			#r1,r2 = pair_list [1][0], pair_list[1][1]
+			#yield m1,m2, (m1,m2, r1,r2)
+			
+				
+				
+			
+			
+	def pairs(source):
+		result = []
+		for p1 in range(len(source)):
+			for p2 in range(p1+1,len(source)):
+				result.append([source[p1],source[p2]])
+        	return result		
 			
 
 	#def reducer_compute_similarities(self, _, values):
