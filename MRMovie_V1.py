@@ -9,7 +9,7 @@ class MRMovie(MRJob):
 		return [
 		MRStep(mapper=self.mapper_get_names,
 			reducer=self.reducer_get_names),
-        MRStep(reducer=self.reducer_create_pairs)]	
+        	MRStep(reducer=self.reducer_create_pairs)]	
 
 	def configure_options(self):
 		super(MRMovie, self).configure_options()
@@ -79,11 +79,9 @@ class MRMovie(MRJob):
 				
 				i=0
 				while i < len(movie_pairings):
-					#creating_pairs.append(movie_pairings[i], rating_pairings[i])
 					yield movie_pairings[i], (movie_pairings[i], rating_pairings[i])
 					i += 1
-				break
-				#print len(creating_pairs)+"\n"
+				
 		#for pair_element in creating_pairs:
 			#pair_list = list(pair_element)
 			#m1,m2 = pair_list[0][0], pair_list[0][1]
