@@ -55,21 +55,20 @@ class MRMovie(MRJob):
 	def reducer_create_pairs(self, _, values):
 		movie_list=[]
 		rating_list=[]
-		global_uid=None
-		creating_pairs=[]
+		#global_uid=None
+		#creating_pairs=[]
         	for value in values:
 			list_values = list(value)
 			uid, mname, rating = list_values[0], list_values[1], list_values[2]
-			if global_uid == None:
-				global_uid = uid
-			if global_uid == uid:
-				movie_list.append(mname)
-				rating_list.append(rating)
-			else:
-				movie_pairings = pairs(movie_list)
-				rating_pairings = pairs(rating_list)
-				movie_list.clear
-				rating_list.clear
+			#if global_uid == None:
+			#	global_uid = uid
+			#if global_uid == uid:
+			movie_list.append(mname)
+			rating_list.append(rating)
+			#movie_pairings = pairs(movie_list)
+			#rating_pairings = pairs(rating_list)
+			#movie_list.clear
+			#rating_list.clear
 				
 				global_uid=uid
 				if len(movie_list) == 0:
