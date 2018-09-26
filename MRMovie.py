@@ -58,7 +58,7 @@ class MRMovie(MRJob):
 		#global_uid=None
 		#creating_pairs=[]
 		pair_list = []
-        	for value in values:
+        	for value in sorted(values):
 			list_values = list(value)
 			uid, movie_list, rating_list = list_values[0], list_values[1], list_values[2]
 			print movie_list+ "\n"
