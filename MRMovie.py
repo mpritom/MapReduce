@@ -64,7 +64,42 @@ class MRMovie(MRJob):
 			yield (m1, m2), (m1, m2, r1, r2)				
 	
 			
+	def reducer_rating_pairs(self,titles,values):
+		rating=[]
+        	for value in values:
+            		list_values = list(value)
+			rate_pair = list_values[2], list_values[3]
+			rating.append(rate_pair)
+        	yield titles,rating
+	def r_similarity(self,titles,ratings):
+		k= self.options.items
+        	rating =list(ratings)
+        	for ratings in rating:
+            		n=len(ratings)
+        	q1=[]
+        	q2=[]
 
+        # Condition to NAN and not string values
+        	for r1 in ratings:
+            		if(isinstance(r1[0], numbers.Integral)):
+                		q1.append((float(r1[0])))
+				q2.append((float(r1[1])))
+            		else:
+                		q1.append((float(1)))
+				q2.append((float(1)))
+
+	        if(n>self.options.rating_pairs):
+			for movie in self.options.moviename:
+				cor = numpy.corrcoef(q1,q2)[0,1]
+				cos_cor = 1-spatial.distance.cosine(q1,q2)
+				avg_cor = 0.5*(cor+cos_cor)
+                #  while(k>0):
+                  if titles[0] == movie:
+			yield titles[0],(titles[1],avg_cor,cor,cos_cor,n)
+                  elif titles[1]==movie:
+			yield titles[1], (titles[0],avg_cor,cor,cos_cor,n)
+		
+		
 #	def reducer_compute_similarities(self, movie_pair, values):
 #		for value in sorted(values):
 #			list_values = list(value)
