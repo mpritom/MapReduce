@@ -1,5 +1,6 @@
 from mrjob.job import MRJob
 from mrjob.step import MRStep
+from itertools import *
 import numpy
 from scipy import spatial
 
@@ -9,7 +10,8 @@ class MRMovie(MRJob):
 		return [
 		MRStep(mapper=self.mapper_get_names,
 			reducer=self.reducer_get_names),
-        	MRStep(reducer=self.reducer_create_pairs)]	
+        	MRStep(reducer=self.reducer_create_pairs),
+		MRStep(reducer=self.reducer_compute_similarities)]	
 
 	def configure_options(self):
 		super(MRMovie, self).configure_options()
@@ -49,52 +51,29 @@ class MRMovie(MRJob):
 			if uid == '0':
 				last_name = name
 			else:
-				yield uid, (uid, last_name,rating)
+				yield uid, (last_name,rating)
 
 
-	def reducer_create_pairs(self, _, values):
-		movie_list=[]
-		rating_list=[]
-		#global_uid=None
-		#creating_pairs=[]
-		pair_list = []
-        	for value in sorted(values):
-			list_values = list(value)
-			uid, movie_list, rating_list = list_values[0], list_values[1], list_values[2]
-			print movie_list+ "\n"
-			print rating_list+ "\n"
+	def reducer_create_pairs(self, uid, values):
+		
+        	for value1, value2 in combinations(values, 2):
+			m1 = value1[0]
+			r1 = value1[1]
+			m2 = value2[0]
+			r2 = value2[1]
 			
-			if len(movie_list) > 1:
-				movie_pair = list(combinations(movie_list, 2))
-				rate_pair = list(combinations(rating_list,2))
-				yield movie_pair, (movie_pair, rate_pair)
-				
-			#movie_pairings = pairs(movie_list)
-			#rating_pairings = pairs(rating_list)
-			#movie_list.clear
-			#rating_list.clear		
-				
-				
-			
-	def CheckDuplicates(in_list):  
-    		unique = set(in_list)  
-    		for each in unique:  
-        		count = in_list.count(each)  
-        		if count > 1:
-				return True
-		return False  		
+			yield (m1, m2), (m1, m2, r1, r2)				
 	
-	def pairs(source):
-		result = []
-		for p1 in range(len(source)):
-			for p2 in range(p1+1,len(source)):
-				result.append([source[p1],source[p2]])
-        	return result		
 			
 
-	#def reducer_compute_similarities(self, _, values):
-		### SOMETHING
-
+	def reducer_compute_similarities(self, movie_pair, values):
+		for value in sorted(values):
+			list_values = list(value)
+			m1 = list_values[0]
+			m2 = list_values[1]
+			r1 = list_values[2]
+			r2 = list_values[3]
+			yield m1,m2, (r1,r2)	
 
 	def reducer_output(self, _, values):
 		for value in values:
