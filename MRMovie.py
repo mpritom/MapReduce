@@ -10,8 +10,7 @@ class MRMovie(MRJob):
 		return [
 		MRStep(mapper=self.mapper_get_names,
 			reducer=self.reducer_get_names),
-        	MRStep(reducer=self.reducer_create_pairs),
-		MRStep(reducer=self.reducer_compute_similarities)]	
+        	MRStep(reducer=self.reducer_create_pairs)]	
 
 	def configure_options(self):
 		super(MRMovie, self).configure_options()
@@ -54,7 +53,7 @@ class MRMovie(MRJob):
 				yield uid, (last_name,rating)
 
 
-	def reducer_create_pairs(self, uid, values):
+	def reducer_create_pairs(self, _, values):
 		
         	for value1, value2 in combinations(values, 2):
 			m1 = value1[0]
@@ -66,14 +65,14 @@ class MRMovie(MRJob):
 	
 			
 
-	def reducer_compute_similarities(self, movie_pair, values):
-		for value in sorted(values):
-			list_values = list(value)
-			m1 = list_values[0]
-			m2 = list_values[1]
-			r1 = list_values[2]
-			r2 = list_values[3]
-			yield m1,m2, (r1,r2)	
+#	def reducer_compute_similarities(self, movie_pair, values):
+#		for value in sorted(values):
+#			list_values = list(value)
+#			m1 = list_values[0]
+#			m2 = list_values[1]
+#			r1 = list_values[2]
+#			r2 = list_values[3]
+#			yield m1,m2, (r1,r2)	
 
 	def reducer_output(self, _, values):
 		for value in values:
