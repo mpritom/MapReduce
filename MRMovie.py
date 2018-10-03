@@ -76,9 +76,9 @@ class MRMovie(MRJob):
 			rating.append(value)
         	yield titles,rating
 	
-	def r_similarity(self,titles,ratings):
-		k= self.options.items
-		rating =list(ratings)
+	def r_similarity(self,titles,values):
+		#k= self.options.items
+		rating =list(values)
         	for ratings in rating:
             		n=len(ratings)
         	q1=[]
@@ -88,12 +88,14 @@ class MRMovie(MRJob):
         	for r1 in ratings:
 			if(isinstance(r1[0], numbers.Integral)):
 				q1.append((float(r1[0])))
-				q2.append((float(r1[1])))
-            		else:
+			else:
                 		q1.append((float(1)))
+			if(isinstance(r1[0], numbers.Integral)):
+				q2.append((float(r1[1])))
+			else:
 				q2.append((float(1)))
 			
-		if(n>self.options.rating_pairs):
+		if(n>self.options.minpairs):
 			for movie in self.options.moviename:
 				cor = numpy.corrcoef(q1,q2)[0,1]
 				cos_cor = 1-spatial.distance.cosine(q1,q2)
