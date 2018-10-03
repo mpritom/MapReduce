@@ -1,4 +1,5 @@
 import numbers
+from six import string_types
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 from itertools import *
@@ -85,26 +86,26 @@ class MRMovie(MRJob):
         	q2=[]
 
         # Condition to NAN and not string values
-        	for r1 in ratings:
-			if(isinstance(r1[0], numbers.Integral)):
-				q1.append((float(r1[0])))
-			else:
-                		q1.append((float(1)))
-			if(isinstance(r1[0], numbers.Integral)):
-				q2.append((float(r1[1])))
-			else:
-				q2.append((float(1)))
-			
-		if(n>self.options.minpairs):
-			for movie in self.options.moviename:
-				cor = numpy.corrcoef(q1,q2)[0,1]
-				cos_cor = 1-spatial.distance.cosine(q1,q2)
-				avg_cor = 0.5*(cor+cos_cor)
-				if titles[0] == movie:
-					yield titles[0],(titles[1],avg_cor,cor,cos_cor,n)
-				elif titles[1]==movie:
-					yield titles[1], (titles[0],avg_cor,cor,cos_cor,n)
-		
+			for r1 in ratings:
+				if(isinstance(r1[0], numbers.Integral) or isinstance(r1[0], basestring)):
+					q1.append((float(r1[0])))
+				else:
+					q1.append((float(1)))
+				if(isinstance(r1[1], numbers.Integral) or isinstance(r1[1], basestring)):
+					q2.append((float(r1[1])))
+				else:
+					q2.append((float(1)))
+
+			if(n>self.options.minpairs):
+				for movie in self.options.moviename:
+					cor = numpy.corrcoef(q1,q2)[0,1]
+					cos_cor = 1-spatial.distance.cosine(q1,q2)
+					avg_cor = 0.5*(cor+cos_cor)
+					if titles[0] == movie:
+						yield titles[0],(titles[1],avg_cor,cor,cos_cor,n)
+					elif titles[1]==movie:
+						yield titles[1], (titles[0],avg_cor,cor,cos_cor,n)
+
                 #  while(k>0):
 		
 		
