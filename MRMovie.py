@@ -1,3 +1,4 @@
+import numbers
 from mrjob.job import MRJob
 from mrjob.step import MRStep
 from itertools import *
@@ -63,15 +64,16 @@ class MRMovie(MRJob):
 			m2 = value2[0]
 			r2 = value2[1]
 			
-			yield (m1, m2), (m1, m2, r1, r2)				
+			yield (m1, m2), (r1, r2)				
 	
 			
 	def reducer_rating_pairs(self,titles,values):
 		rating=[]
+		#myval = 1000000
         	for value in values:
-            		list_values = list(value)
-			rate_pair = list_values[2], list_values[3]
-			rating.append(rate_pair)
+            		#list_values = list(value)
+			#rate_pair = list_values[2], list_values[3]
+			rating.append(value)
         	yield titles,rating
 	
 	def r_similarity(self,titles,ratings):
