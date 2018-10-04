@@ -22,7 +22,7 @@ class MRMovie(MRJob):
 		super(MRMovie, self).configure_options()
 		self.add_passthrough_option(
             '-l', '--lowerbound', action="store", type='float',
-            default=0.4, help='Lower bound of similarity.')
+            default=0.6, help='Lower bound of similarity.')
 		self.add_passthrough_option(
             '-p', '--minpairs', action="store", type='int',
             default=8, help='Minimum number of rating pairs.')
@@ -84,41 +84,29 @@ class MRMovie(MRJob):
 		rating =list(values)
         	for ratings in rating:
             		n=len(ratings)
-        	q1=[]
-        	q2=[]
+        	rate1=[]
+        	rate2=[]
 
-        # Condition to NAN and not string values
-		for r1 in ratings:
+        	for r1 in ratings:
 			if(isinstance(r1[0], numbers.Integral) or isinstance(r1[0], basestring)):
-				q1.append((float(r1[0])))
+				rate1.append((float(r1[0])))
 			else:
-				q1.append((float(1)))
+				rate1.append((float(1)))
 			if(isinstance(r1[1], numbers.Integral) or isinstance(r1[1], basestring)):
-				q2.append((float(r1[1])))
+				rate2.append((float(r1[1])))
 			else:
-				q2.append((float(1)))
+				rate2.append((float(1)))
+		# this avobe part is for coverting string to floats for getting ready for calculation
 
 		if(n>self.options.minpairs):
 			for movie in self.options.moviename:
-				cor = numpy.corrcoef(q1,q2)[0,1]
-				cos_cor = 1-spatial.distance.cosine(q1,q2)
-				avg_cor = 0.5*(cor+cos_cor)
+				stat_cor = numpy.corrcoef(rate1,rate2)[0,1]
+				cos_cor = 1-spatial.distance.cosine(rate1,rate2)
+				avg_cor = 0.5*(stat_cor+cos_cor)
 				if titles[0] == movie:
-					yield titles[0],titles[1], (titles[0],titles[1],avg_cor,cor,cos_cor,n)
-				elif titles[1]==movie:
-					yield titles[1],titles[0] (titles[1],titles[0],avg_cor,cor,cos_cor,n)
-
-                #  while(k>0):
-		
-		
-#	def reducer_compute_similarities(self, movie_pair, values):
-#		for value in sorted(values):
-#			list_values = list(value)
-#			m1 = list_values[0]
-#			m2 = list_values[1]
-#			r1 = list_values[2]
-#			r2 = list_values[3]
-#			yield m1,m2, (r1,r2)	
+					yield titles[0],titles[1], (titles[0],titles[1],avg_cor,stat_cor,cos_cor,n)
+				elif titles[1] == movie:
+					yield titles[1],titles[0] (titles[1],titles[0],avg_cor,stat_cor,cos_cor,n)
 
 	def reducer_output(self, _, values):
 		for value in values:
