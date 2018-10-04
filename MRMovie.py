@@ -14,7 +14,9 @@ class MRMovie(MRJob):
 			reducer=self.reducer_get_names),
         	MRStep(reducer=self.reducer_create_pairs),
 		MRStep(reducer=self.reducer_rating_pairs),
-          	MRStep(reducer=self.r_similarity)]	
+          	MRStep(reducer=self.r_similarity)
+		MRStep(reducer=self.reducer_output),
+		MRStep(reducer=self.reducer_sort_results)]	
 
 	def configure_options(self):
 		super(MRMovie, self).configure_options()
@@ -102,9 +104,9 @@ class MRMovie(MRJob):
 				cos_cor = 1-spatial.distance.cosine(q1,q2)
 				avg_cor = 0.5*(cor+cos_cor)
 				if titles[0] == movie:
-					yield titles[0],(titles[1],avg_cor,cor,cos_cor,n)
+					yield titles[0],titles[1], (titles[0],titles[1],avg_cor,cor,cos_cor,n)
 				elif titles[1]==movie:
-					yield titles[1], (titles[0],avg_cor,cor,cos_cor,n)
+					yield titles[1],titles[0] (titles[1],titles[0],avg_cor,cor,cos_cor,n)
 
                 #  while(k>0):
 		
@@ -121,7 +123,7 @@ class MRMovie(MRJob):
 	def reducer_output(self, _, values):
 		for value in values:
 			list_values = list(value)
-			m1,m2,stat_cor,cos_cor,avg_cor,counter = list_values
+			m1,m2,avg_cor,stat_cor,cos_cor,counter = list_values
 			for movie in self.options.moviename:
 				if m1 == movie:
 					yield m1,(str(1-float(avg_cor)),m1,m2,stat_cor,cos_cor,counter)
