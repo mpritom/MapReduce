@@ -14,7 +14,7 @@ class MRMovie(MRJob):
 			reducer=self.reducer_get_names),
         	MRStep(reducer=self.reducer_create_pairs),
 		MRStep(reducer=self.reducer_rating_pairs),
-          	MRStep(reducer=self.r_similarity)
+          	MRStep(reducer=self.r_similarity),
 		MRStep(reducer=self.reducer_output),
 		MRStep(reducer=self.reducer_sort_results)]	
 
@@ -72,15 +72,11 @@ class MRMovie(MRJob):
 			
 	def reducer_rating_pairs(self,titles,values):
 		rating=[]
-		#myval = 1000000
-        	for value in values:
-            		#list_values = list(value)
-			#rate_pair = list_values[2], list_values[3]
-			rating.append(value)
+		for value in values:
+            		rating.append(value)
         	yield titles,rating
 	
 	def r_similarity(self,titles,values):
-		#k= self.options.items
 		rating =list(values)
         	for ratings in rating:
             		n=len(ratings)
