@@ -1,4 +1,5 @@
 sudo apt update
+sudo apt-get install default-jre
 sudo apt install python-minimal
 sudo apt install python-pip
 sudo apt install unzip
