@@ -14,15 +14,16 @@ with open("movies.dat") as f:
 moviedata = sc.parallelize(moviedata)
  
 movie = ["Toy Story (1995)","Waiting to Exhale (1995)","Sudden Death (1995)"]
- 
+
 #### read the file line by line and split items
+
 m1=moviedata.map(lambda x: x.strip().split('::')).map(lambda x: (x[0],x[1]))
 mid=m1.filter(lambda x: x[1] in movie).map(lambda x: x[0]).take(100)
 mname=m1.filter(lambda x: x[1] in movie).take(100)
 r1=ratingdata.map(lambda x: x.strip().split('::')).map(lambda x: (x[0],(x[1],x[2])))
  
- 
- 
+
+  
 #### just to print out the first 10 items of m1 and r1
 m_head = m1.take(10)
 r_head = r1.take(10)
