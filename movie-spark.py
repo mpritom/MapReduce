@@ -6,6 +6,13 @@ import numpy as np
 from datetime import datetime
 from math import sqrt
 
+def loadMovieNames():
+    movieNames = {}
+    with open("movies.dat") as f:
+        moviedata = f.readlines()
+    moviedata = sc.parallelize(moviedata)
+    movieNames=moviedata.map(lambda x: x.strip().split('::')).map(lambda x: [x[1]])
+    return movieNames
 
 def makePairs((user, ratings)):
     (movie1, rating1) = ratings[0]
@@ -40,33 +47,28 @@ with open("ratings.dat") as f:
     ratingdata = f.readlines()
 ratingdata = sc.parallelize(ratingdata)
 
-def loadMovieNames():
-    movieNames = {}
-    with open("movies.dat") as f:
-        for line in f:
-            fields = line.split("::")
-            movieNames[int(fields[0])] = fields[1].decode('ascii', 'ignore')
-    return movieNames
- 
-nameDict = loadMovieNames()
+
    
 #with open("movies.dat") as f:
 #    moviedata = f.readlines()
 #moviedata = sc.parallelize(moviedata)
- #movie = ["Toy Story (1995)"]
+#movie = ["Toy Story (1995)"]
 
 #### read the file line by line and split items
 
-m1=moviedata.map(lambda x: x.strip().split('::')).map(lambda x: (x[0],x[1]))
-mid=m1.filter(lambda x: x[0] in movie).map(lambda x: x[0]).take(100)
-mname=m1.filter(lambda x: x[0] in movie).take(100)
-r1=ratingdata.map(lambda x: x.strip().split('::')).map(lambda x: (x[0],(x[1],x[2])))
+#m1=moviedata.map(lambda x: x.strip().split('::')).map(lambda x: (x[0],x[1]))
+#mid=m1.filter(lambda x: x[0] in movie).map(lambda x: x[0]).take(100)
+#mname=m1.filter(lambda x: x[0] in movie).take(100)
+r1=ratingdata.map(lambda x: x.strip().split('::')).map(lambda x: (int(x[0]),(int(x[1]),float(x[2]))))
 
 
 ratingsPartitioned = r1.partitionBy(100)
 joinedRatings = ratingsPartitioned.join(ratingsPartitioned)
 uniqueJoinedRatings = joinedRatings.filter(filterDuplicates)
 
+nameDict = loadMovieNames()
+m_head= nameDict.take(10)
+print "first 10 items in m1:", m_head
 moviePairs = uniqueJoinedRatings.map(makePairs).partitionBy(100)
 moviePairRatings = moviePairs.groupByKey()
 
@@ -76,9 +78,9 @@ moviePairSimilarities = moviePairRatings.mapValues(computeCosineSimilarity).pers
 moviePairSimilarities.sortByKey()
 moviePairSimilarities.saveAsTextFile("movie-sims")
 
-scoreThreshold = 0.97
-coOccurenceThreshold = 100
-movieID = 1
+scoreThreshold = 0.60
+coOccurenceThreshold = 15
+movieID = int(sys.argv[1])
 filteredResults = moviePairSimilarities.filter(lambda((pair,sim)): \
         (pair[0] == movieID or pair[1] == movieID) \
         and sim[0] > scoreThreshold and sim[1] > coOccurenceThreshold)
