@@ -11,7 +11,7 @@ def loadMovieNames():
     with open("movies.dat") as f:
         moviedata = f.readlines()
     moviedata = sc.parallelize(moviedata)
-    movieNames=moviedata.map(lambda x: x.strip().split('::')).map(lambda x: [x[1]])
+    movieNames=moviedata.map(lambda x: x.strip().split('::')).map(lambda x: x[1])
     return movieNames
 
 def makePairs((user, ratings)):
@@ -67,7 +67,7 @@ joinedRatings = ratingsPartitioned.join(ratingsPartitioned)
 uniqueJoinedRatings = joinedRatings.filter(filterDuplicates)
 
 nameDict = loadMovieNames()
-m_head= nameDict.take(10)
+#m_head= nameDict.take(10)
 print "first 10 items in m1:", m_head
 moviePairs = uniqueJoinedRatings.map(makePairs).partitionBy(100)
 moviePairRatings = moviePairs.groupByKey()
@@ -86,6 +86,7 @@ filteredResults = moviePairSimilarities.filter(lambda((pair,sim)): \
         and sim[0] > scoreThreshold and sim[1] > coOccurenceThreshold)
 results = filteredResults.map(lambda((pair,sim)): (sim, pair)).sortByKey(ascending = False).take(10)
 
+m_head= nameDict.take(10)
 print("Top 10 similar movies for " +nameDict[movieID])
 for result in results:
  (sim, pair) = result
