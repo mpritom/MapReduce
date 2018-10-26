@@ -7,7 +7,7 @@ from datetime import datetime
 from math import sqrt
 
 def loadMovieNames():
-    movieNames = {}
+    movieNames = []
     with open("movies.dat") as f:
         moviedata = f.readlines()
     moviedata = sc.parallelize(moviedata)
