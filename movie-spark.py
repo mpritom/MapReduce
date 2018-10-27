@@ -7,13 +7,6 @@ import numpy as np
 from datetime import datetime
 from math import sqrt
 
-def loadMovieNames():
-    movieNames = []
-    with open("movies.dat") as f:
-        moviedata = f.readlines()
-    moviedata = sc.parallelize(moviedata)
-    movieNames=moviedata.map(lambda x: x.strip().split('::')).map(lambda x: x[1])
-    return movieNames
 
 def makePairs((user, ratings)):
     (movie1, rating1) = ratings[0]
@@ -51,56 +44,54 @@ def stat_correlation(ratingPairs):
 with open("ratings.dat") as f:
     ratingdata = f.readlines()
 ratingdata = sc.parallelize(ratingdata)
-
-
-   
-#with open("movies.dat") as f:
-#    moviedata = f.readlines()
+moviedata={}
+with open("movies.dat") as f:
+    for line in f:
+       (mid, name) = line.split('::')
+       moviedata[int(mid)] = name
+    
 #moviedata = sc.parallelize(moviedata)
-#movie = ["Toy Story (1995)"]
 
-#### read the file line by line and split items
+movie = ["Toy Story (1995)","Waiting to Exhale (1995)","Sudden Death (1995)"]
 
 #m1=moviedata.map(lambda x: x.strip().split('::')).map(lambda x: (x[0],x[1]))
-#mid=m1.filter(lambda x: x[0] in movie).map(lambda x: x[0]).take(100)
-#mname=m1.filter(lambda x: x[0] in movie).take(100)
-r1=ratingdata.map(lambda x: x.strip().split('::')).map(lambda x: (int(x[0]),(int(x[1]),float(x[2]))))
+#mid=m1.filter(lambda x: x[1] in movie).map(lambda x: x[0]).take(100)
+#mname=m1.filter(lambda x: x[1] in movie).map(lambda x: x[1]).take(100)
 
+
+r1=ratingdata.map(lambda x: x.strip().split('::')).map(lambda x: (int(x[0]),(int(x[1]),float(x[2]))))
 
 ratingsPartitioned = r1.partitionBy(100)
 joinedRatings = ratingsPartitioned.join(ratingsPartitioned)
 uniqueJoinedRatings = joinedRatings.filter(filterDuplicates)
-
-nameDict = loadMovieNames()
-#m_head= nameDict.take(10)
 
 moviePairs = uniqueJoinedRatings.map(makePairs).partitionBy(100)
 moviePairRatings = moviePairs.groupByKey()
 
 moviePairSimilarities = moviePairRatings.mapValues(stat_correlation).persist()
 
-# Save the results if desired
+# sort the results by key
 moviePairSimilarities.sortByKey()
-#moviePairSimilarities.saveAsTextFile("movie-sims")
 
 scoreThreshold = 0.4
 coOccurenceThreshold = 5
 movieID = int(sys.argv[1]) #movieID = 1 which is Toy Story; Given as command line argv
+
 filteredResults = moviePairSimilarities.filter(lambda((pair,sim)): \
         (pair[0] == movieID or pair[1] == movieID) \
         and sim[0] > scoreThreshold and sim[1] > coOccurenceThreshold)
 results = filteredResults.map(lambda((pair,sim)): (sim, pair)).sortByKey(ascending = False).take(10)
 
-#m_head= nameDict.take(10)
-#print "first 10 items in m1:", m_head
 print("Top 10 similar movies for Toy story: ")
-#print("Top 10 similar movies for " )
-#f = io.open("similarity_out.txt", mode="w", encoding="utf-8") 
+
 for result in results:
+   # movie_list= []
     (sim, pair) = result
-    # Display the similarity result that isn't the movie we're looking at
     similarMovieID = pair[0]
     if (similarMovieID == movieID):
         similarMovieID = pair[1]
-    print( "[Toy Story, paired with movie id: "+ str(similarMovieID) + ", correlation = " + str(sim[0]) + ", co-occurance =  " + str(sim[1])+ "]")
+    #movie_list.append(similarMovieID)
+    #similarMovieName=m1.filter(lambda x: x[0] in movie_list).map(lambda x: x[1])
+    similarMovieName = moviedata.get(int(similarMovieID))
+    print("["+str(moviedata.get(int(movieID)))+","+ str(similarMovieName) + ", correlation = " + str(sim[0]) + ", co-occurance =  " + str(sim[1])+ "]")
   
