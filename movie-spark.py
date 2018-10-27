@@ -25,17 +25,21 @@ def filterDuplicates( (userID, ratings) ):
     (movie2, rating2) = ratings[1]
     return movie1 < movie2
   
-def computeCosineSimilarity(ratingPairs):
+
+def stat_correlation(ratingPairs):
     numPairs = 0
-    sum_xx = sum_yy = sum_xy = 0
+    sum_xx = sum_yy = sum_xy = sum_x = sum_y = 0
     for ratingX, ratingY in ratingPairs:
+        sum_x += ratingX
+        sum_y += ratingY
         sum_xx += ratingX * ratingX
         sum_yy += ratingY * ratingY
         sum_xy += ratingX * ratingY
         numPairs += 1
+    sum_x_y = sum_x * sum_y
 
-    numerator = sum_xy
-    denominator = sqrt(sum_xx) * sqrt(sum_yy)
+    numerator = numPairs * sum_xy - sum_x_y 
+    denominator = sqrt(numPairs * sum_xx - sum_x * sum_x) * sqrt(numPairs * sum_yy - sum_y * sum_y )
 
     score = 0
     if (denominator):
@@ -73,15 +77,15 @@ nameDict = loadMovieNames()
 moviePairs = uniqueJoinedRatings.map(makePairs).partitionBy(100)
 moviePairRatings = moviePairs.groupByKey()
 
-moviePairSimilarities = moviePairRatings.mapValues(computeCosineSimilarity).persist()
+moviePairSimilarities = moviePairRatings.mapValues(stat_correlation).persist()
 
 # Save the results if desired
 moviePairSimilarities.sortByKey()
 #moviePairSimilarities.saveAsTextFile("movie-sims")
 
-scoreThreshold = 0.8
+scoreThreshold = 0.4
 coOccurenceThreshold = 5
-movieID = int(sys.argv[1])
+movieID = int(sys.argv[1]) #movieID = 1 which is Toy Story; Given as command line argv
 filteredResults = moviePairSimilarities.filter(lambda((pair,sim)): \
         (pair[0] == movieID or pair[1] == movieID) \
         and sim[0] > scoreThreshold and sim[1] > coOccurenceThreshold)
@@ -89,7 +93,7 @@ results = filteredResults.map(lambda((pair,sim)): (sim, pair)).sortByKey(ascendi
 
 #m_head= nameDict.take(10)
 #print "first 10 items in m1:", m_head
-print("Top 10 similar movies for toy story: ")
+print("Top 10 similar movies for Toy story: ")
 #print("Top 10 similar movies for " )
 #f = io.open("similarity_out.txt", mode="w", encoding="utf-8") 
 for result in results:
@@ -98,11 +102,5 @@ for result in results:
     similarMovieID = pair[0]
     if (similarMovieID == movieID):
         similarMovieID = pair[1]
-    print( "and movie id: "+ str(similarMovieID) + "\tscore: " + str(sim[0]) + "\tstrength: " + str(sim[1]))
-    #f.write("movie pairs (1,"+ str(similarMovieID) + ", similarity = "+ str(sim[0]) + ", count = "+str(sim[1])+"\n")
-#f.close()
- 
-#### just to print out the first 10 items of m1 and r1
-#m_head = m1.take(10)
-#r_head = r1.take(10)
-#print "first 10 items in m1:", m_head
+    print( "[Toy Story, paired with movie id: "+ str(similarMovieID) + ", correlation = " + str(sim[0]) + ", co-occurance =  " + str(sim[1])+ "]")
+  
